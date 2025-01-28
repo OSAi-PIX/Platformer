@@ -1,59 +1,214 @@
-<header>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Platformer Game</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #87CEEB;
+        }
 
-<!--
-  <<< Author notes: Course header >>>
-  Include a 1280×640 image, course title in sentence case, and a concise description in emphasis.
-  In your repository settings: enable template repository, add your 1280×640 social image, auto delete head branches.
-  Add your open source license, GitHub uses MIT license.
--->
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background-color: #e0e0e0;
+        }
 
-# GitHub Pages
+        #player {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background-color: red;
+            border-radius: 5px;
+            transition: left 0.1s, bottom 0.1s;
+        }
 
-_Create a site or blog from your GitHub repositories with GitHub Pages._
+        .platform {
+            position: absolute;
+            width: 200px;
+            height: 20px;
+            background-color: green;
+        }
 
-</header>
+        .enemy {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background-color: black;
+            border-radius: 5px;
+        }
 
-<!--
-  <<< Author notes: Step 2 >>>
-  Start this step by acknowledging the previous step.
-  Define terms and link to docs.github.com.
-  Historic note: previous version checked for empty pull request, changed to the correct theme `minima`.
--->
+        .health-bar {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 200px;
+            height: 20px;
+            background-color: #333;
+            border-radius: 5px;
+        }
 
-## Step 2: Configure your site
+        .health-bar div {
+            height: 100%;
+            width: 100%;
+            background-color: red;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="player"></div>
+        <div class="platform" style="left: 100px; bottom: 50px;"></div>
+        <div class="platform" style="left: 300px; bottom: 150px;"></div>
+        <div class="platform" style="left: 500px; bottom: 250px;"></div>
+        <div class="platform" style="left: 700px; bottom: 350px;"></div>
+        <div class="platform" style="left: 900px; bottom: 450px;"></div>
+        <div class="enemy" style="left: 350px; bottom: 150px;"></div>
+        <div class="enemy" style="left: 650px; bottom: 250px;"></div>
+        <div class="health-bar">
+            <div id="health"></div>
+        </div>
+    </div>
 
-_You turned on GitHub Pages! :tada:_
+    <script>
+        const player = document.getElementById('player');
+        const gameContainer = document.getElementById('game-container');
+        const healthBar = document.getElementById('health');
 
-We'll work in a branch, `my-pages`, that I created for you to get this site looking great. :sparkle:
+        const playerSpeed = 5;
+        const gravity = 0.8;
+        const jumpStrength = 15;
 
-Jekyll uses a file titled `_config.yml` to store settings for your site, your theme, and reusable content like your site title and GitHub handle. You can check out the `_config.yml` file on the **Code** tab of your repository.
+        let playerX = 100, playerY = 500; 
+        let velocityY = 0;
+        let isJumping = false;
+        let isFalling = false;
+        let health = 100;
+        let keys = {};
 
-We need to use a blog-ready theme. For this activity, we will use a theme named "minima".
+        const platforms = [
+            { x: 100, y: 50, width: 200, height: 20 },
+            { x: 300, y: 150, width: 200, height: 20 },
+            { x: 500, y: 250, width: 200, height: 20 },
+            { x: 700, y: 350, width: 200, height: 20 },
+            { x: 900, y: 450, width: 200, height: 20 },
+        ];
 
-### :keyboard: Activity: Configure your site
+        const enemies = [
+            { x: 350, y: 150, width: 50, height: 50, direction: 1 },
+            { x: 650, y: 250, width: 50, height: 50, direction: -1 }
+        ];
 
-1. Browse to the `_config.yml` file in the `my-pages` branch.
-1. In the upper right corner, open the file editor.
-1. Add a `theme:` set to **minima** so it shows in the `_config.yml` file as below:
-   ```yml
-   theme: minima
-   ```
-1. (optional) You can modify the other configuration variables such as `title:`, `author:`, and `description:` to further customize your site.
-1. Commit your changes.
-1. (optional) Create a pull request to view all the changes you'll make throughout this course. Click the **Pull Requests** tab, click **New pull request**, set `base: main` and `compare:my-pages`.
-1. Wait about 20 seconds then refresh this page (the one you're following instructions from). [GitHub Actions](https://docs.github.com/en/actions) will automatically update to the next step.
+        function updatePlayerPosition() {
+            if (keys['ArrowLeft']) {
+                playerX -= playerSpeed;
+            }
+            if (keys['ArrowRight']) {
+                playerX += playerSpeed;
+            }
 
-<footer>
+            if (isJumping) {
+                velocityY = -jumpStrength;
+                isJumping = false;
+            }
 
-<!--
-  <<< Author notes: Footer >>>
-  Add a link to get support, GitHub status page, code of conduct, license link.
--->
+            velocityY += gravity;
+            playerY += velocityY;
 
----
+            if (playerY > gameContainer.offsetHeight - 50) {
+                playerY = gameContainer.offsetHeight - 50;
+                isFalling = false;
+                velocityY = 0;
+            }
 
-Get help: [Post in our discussion board](https://github.com/orgs/skills/discussions/categories/github-pages) &bull; [Review the GitHub status page](https://www.githubstatus.com/)
+            player.style.left = playerX + 'px';
+            player.style.bottom = playerY + 'px';
+        }
 
-&copy; 2023 GitHub &bull; [Code of Conduct](https://www.contributor-covenant.org/version/2/1/code_of_conduct/code_of_conduct.md) &bull; [MIT License](https://gh.io/mit)
+        function detectCollisions() {
+            isFalling = true;
 
-</footer>
+            // Check for platform collisions
+            for (const platform of platforms) {
+                if (
+                    playerX + 50 > platform.x &&
+                    playerX < platform.x + platform.width &&
+                    playerY <= platform.y + platform.height &&
+                    playerY + 50 > platform.y
+                ) {
+                    playerY = platform.y + platform.height;
+                    isFalling = false;
+                    velocityY = 0;
+                }
+            }
+
+            // Check for enemy collisions
+            for (const enemy of enemies) {
+                if (
+                    playerX + 50 > enemy.x &&
+                    playerX < enemy.x + enemy.width &&
+                    playerY + 50 > enemy.y &&
+                    playerY < enemy.y + enemy.height
+                ) {
+                    takeDamage();
+                }
+            }
+        }
+
+        function takeDamage() {
+            health -= 10;
+            healthBar.style.width = `${health}%`;
+            if (health <= 0) {
+                alert("Game Over!");
+                resetGame();
+            }
+        }
+
+        function moveEnemies() {
+            for (const enemy of enemies) {
+                enemy.x += enemy.direction * 2;
+                if (enemy.x <= 0 || enemy.x >= gameContainer.offsetWidth - 50) {
+                    enemy.direction *= -1;
+                }
+                const enemyElement = document.querySelectorAll('.enemy')[enemies.indexOf(enemy)];
+                enemyElement.style.left = `${enemy.x}px`;
+                enemyElement.style.bottom = `${enemy.y}px`;
+            }
+        }
+
+        function gameLoop() {
+            updatePlayerPosition();
+            detectCollisions();
+            moveEnemies();
+            requestAnimationFrame(gameLoop);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+
+            if (e.key === ' ' && !isJumping && !isFalling) {
+                isJumping = true;
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
+
+        function resetGame() {
+            playerX = 100;
+            playerY = 500;
+            velocityY = 0;
+            health = 100;
+            healthBar.style.width = '100%';
+        }
+
+        gameLoop();
+    </script>
+</body>
+</html>
